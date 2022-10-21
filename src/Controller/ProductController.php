@@ -11,7 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ProductController extends AbstractController
 {
-    #[Route('/api/products', name: 'app_product')]
+    #[Route('/api/products', name: 'app_product', methods: ['GET'])]
     public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
         $productList = $productRepository->findAll();
@@ -20,7 +20,7 @@ class ProductController extends AbstractController
         return new JsonResponse($jsonProductlist, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/api/products/{id}', name: 'detailProduct', methods: ['GET'])]
+    #[Route('/api/products/{id}', name: 'detail_Product', methods: ['GET'])]
     public function getDetailProduct(int $id, SerializerInterface $serializer, ProductRepository $productRepository): JsonResponse
     {
 
