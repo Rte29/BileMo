@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\ProductRepository;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,9 +15,11 @@ class ProductController extends AbstractController
 {
     #[Route('/api/products', name: 'app_product', methods: ['GET'])]
     #[IsGranted('ROLE_CUSTOMER', message: 'Vous n\'avez pas les droits')]
-    public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
+    public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer, Request $request): JsonResponse
     {
-        $productList = $productRepository->findAll();
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 3);
+        $productList = $productRepository->findAllWithPagination($page, $limit);
 
         $jsonProductlist = $serializer->serialize($productList, 'json');
         return new JsonResponse($jsonProductlist, Response::HTTP_OK, [], true);
