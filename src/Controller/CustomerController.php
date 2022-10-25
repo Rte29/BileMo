@@ -25,14 +25,14 @@ class CustomerController extends AbstractController
         $jsonCustomerlist = $serializer->serialize($customerList, 'json', ['groups' => 'getCustomers']);
         return new JsonResponse($jsonCustomerlist, Response::HTTP_OK, [], true);
     }
-    #[Route('/api/customer/{id}', name: 'detail_customer', methods: ['GET'])]
+    #[Route('/api/customers/{id}', name: 'detail_customer', methods: ['GET'])]
     #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
     public function getDetailCustomer(int $id, SerializerInterface $serializer, CustomerRepository $customerRepository): JsonResponse
     {
 
         $customer = $customerRepository->find($id);
         if ($customer) {
-            $jsonCustomer = $serializer->serialize($customer, 'json');
+            $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomers']);
             return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
         }
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);

@@ -68,7 +68,7 @@ class AppFixtures extends Fixture
 
         for ($i = 1; $i < 20; $i++) {
             $customer = new Customer();
-            $customer->setLastName($faker->name);
+            $customer->setLastName($faker->lastname);
             $customer->setFirstName($faker->firstName);
             $customer->setEmail($faker->numberBetween(100, 800));
             $customer->setRelation($listUser[array_rand($listUser)]);
