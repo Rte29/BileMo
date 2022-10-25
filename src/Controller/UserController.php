@@ -13,7 +13,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class UserController extends AbstractController
 {
     #[Route('/api/users', name: 'app_user', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour créer un livre')]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $userList = $userRepository->findAll();
@@ -22,8 +22,8 @@ class UserController extends AbstractController
         return new JsonResponse($jsonUserlist, Response::HTTP_OK, [], true);
     }
     #[Route('/api/users/{id}', name: 'detail_User', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour créer un livre')]
-    public function getDetailProduct(int $id, SerializerInterface $serializer, UserRepository $userRepository): JsonResponse
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
+    public function getDetailUser(int $id, SerializerInterface $serializer, UserRepository $userRepository): JsonResponse
     {
 
         $user = $userRepository->find($id);
