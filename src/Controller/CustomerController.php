@@ -2,9 +2,13 @@
 
 namespace App\Controller;
 
-use App\Repository\UserRepository;
+use App\Entity\Customer;
 use App\Repository\CustomerRepository;
+<<<<<<< HEAD
 use Symfony\Component\HttpFoundation\Request;
+=======
+use Doctrine\ORM\EntityManagerInterface;
+>>>>>>> delCustomer
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -36,5 +40,15 @@ class CustomerController extends AbstractController
             return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
         }
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+    }
+
+    #[Route('/api/customers/{id}', name: 'delete_customer', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits pour supprimer un customer')]
+    public function deleteCustomer(Customer $customer, EntityManagerInterface $em): JsonResponse
+    {
+        $em->remove($customer);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }
