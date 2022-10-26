@@ -3,19 +3,18 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
-use App\Repository\CustomerRepository;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManager;
+use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class CustomerController extends AbstractController
 {
@@ -74,5 +73,24 @@ class CustomerController extends AbstractController
         $location = $urlGenerator->generate('detail_customer', ['id' => $customer->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, ["Location" => $location], true);
+    }
+
+    #[Route('/api/customers/{id}', name: "updateCustomer", methods: ['PUT'])]
+    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
+    public function updateCustomer(Request $request, SerializerInterface $serializer, Customer $currentCustomer, EntityManagerInterface $em, UserRepository $userRepository): JsonResponse
+    {
+        $updatedCustomer = $serializer->deserialize(
+            $request->getContent(),
+            Customer::class,
+            'json',
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentCustomer]
+        );
+        $content = $request->toArray();
+        $idUser = $content['idUser'] ?? -1;
+        $updatedCustomer->setRelation($userRepository->find($idUser));
+
+        $em->persist($updatedCustomer);
+        $em->flush();
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
