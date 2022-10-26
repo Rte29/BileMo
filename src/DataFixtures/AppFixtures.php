@@ -22,15 +22,15 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
+        $faker = Faker\Factory::create('fr_FR');
+
         for ($i = 1; $i < 20; $i++) {
             $product = new Product();
             $product->setName("Nom du téléphone n°" . $i);
             $product->setDescription("Description du téléphone n°" . $i);
-            $product->setPrice(499.99);
+            $product->setPrice($faker->numberBetween(100, 800));
             $manager->persist($product);
         }
-
-        $faker = Faker\Factory::create('fr_FR');
 
         //création des customers
         $listUser = [];
@@ -68,9 +68,9 @@ class AppFixtures extends Fixture
 
         for ($i = 1; $i < 20; $i++) {
             $customer = new Customer();
-            $customer->setLastName($faker->name);
+            $customer->setLastName($faker->lastname);
             $customer->setFirstName($faker->firstName);
-            $customer->setEmail($faker->numberBetween(100, 800));
+            $customer->setEmail($faker->email);
             $customer->setRelation($listUser[array_rand($listUser)]);
             $manager->persist($customer);
         }
