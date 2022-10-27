@@ -15,23 +15,33 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class CustomerController extends AbstractController
 {
     #[Route('/api/customers', name: 'app_customers', methods: ['GET'])]
-    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
-    public function getAllCustomers(CustomerRepository $customerRepository, SerializerInterface $serializer, Request $request): JsonResponse
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
+    public function getAllCustomers(CustomerRepository $customerRepository, SerializerInterface $serializer, Request $request, TagAwareCacheInterface $cache): JsonResponse
     {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
-        $customerList = $customerRepository->findAllWithPagination($page, $limit);
 
-        $jsonCustomerlist = $serializer->serialize($customerList, 'json', ['groups' => 'getCustomers']);
-        return new JsonResponse($jsonCustomerlist, Response::HTTP_OK, [], true);
+        $idCache = "app_customers" . $page . "-" . $limit;
+
+        $jsonCustomerList = $cache->get($idCache, function (ItemInterface $item) use ($customerRepository, $page, $limit, $serializer) {
+            echo ("pas en cache");
+            $item->tag("customersCache");
+            $customerList = $customerRepository->findAllWithPagination($page, $limit);
+            return $serializer->serialize($customerList, 'json', ['groups' => 'getCustomers']);
+        });
+
+
+        return new JsonResponse($jsonCustomerList, Response::HTTP_OK, [], true);
     }
 
     #[Route('/api/customers/{id}', name: 'detail_customer', methods: ['GET'])]
-    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function getDetailCustomer(int $id, SerializerInterface $serializer, CustomerRepository $customerRepository): JsonResponse
     {
 
@@ -44,7 +54,7 @@ class CustomerController extends AbstractController
     }
 
     #[Route('/api/customers/{id}', name: 'delete_customer', methods: ['DELETE'])]
-    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits pour supprimer un customer')]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits pour supprimer un customer')]
     public function deleteCustomer(Customer $customer, EntityManagerInterface $em): JsonResponse
     {
         $em->remove($customer);
@@ -54,7 +64,7 @@ class CustomerController extends AbstractController
     }
 
     #[Route('/api/customers', name: 'create_customers', methods: ['POST'])]
-    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function createCustomers(SerializerInterface $serializer, Request $request, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, UserRepository $userRepository): JsonResponse
     {
         $customer = $serializer->deserialize($request->getContent(), Customer::class, 'json');
@@ -76,7 +86,7 @@ class CustomerController extends AbstractController
     }
 
     #[Route('/api/customers/{id}', name: "updateCustomer", methods: ['PUT'])]
-    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function updateCustomer(Request $request, SerializerInterface $serializer, Customer $currentCustomer, EntityManagerInterface $em, UserRepository $userRepository): JsonResponse
     {
         $updatedCustomer = $serializer->deserialize(

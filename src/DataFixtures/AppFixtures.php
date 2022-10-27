@@ -38,29 +38,29 @@ class AppFixtures extends Fixture
         //création d'un user "normal"
         $user = new User();
         $user->setEmail("user@bilemoapi.com");
-        $user->setRoles(["ROLE_USER"]);
+        $user->setRoles(["ROLE_ADMIN"]);
         $user->setPassword($this->userPasswordHasher->hashPassword($user, "password"));
         $user->setName("user");
         $manager->persist($user);
 
         $listUser[] = $user;
 
-        //création d'un user "admin"
-        $Admin = new User();
-        $Admin->setEmail("admin@bilemoapi.com");
-        $Admin->setRoles(["ROLE_ADMIN"]);
-        $Admin->setPassword($this->userPasswordHasher->hashPassword($Admin, "password"));
-        $Admin->setName("user");
-        $manager->persist($Admin);
+        //création d'un "admin"
+        $admin = new User();
+        $admin->setEmail("admin@bilemoapi.com");
+        $admin->setRoles(["ROLE_SUPER_ADMIN"]);
+        $admin->setPassword($this->userPasswordHasher->hashPassword($admin, "password"));
+        $admin->setName("admin");
+        $manager->persist($admin);
 
         $listUser[] = $user;
 
-        //création d'un user "externe"
+        //création d'un "customer"
         $customer = new User();
-        $customer->setEmail("externe@bilemoapi.com");
-        $customer->setRoles(["ROLE_CUSTOMER"]);
+        $customer->setEmail("customer@bilemoapi.com");
+        $customer->setRoles(["ROLE_USER"]);
         $customer->setPassword($this->userPasswordHasher->hashPassword($customer, "password"));
-        $customer->setName("externe");
+        $customer->setName("customer");
         $manager->persist($customer);
 
         //on sauvegarde le customer créé dans un tableau

@@ -3,30 +3,39 @@
 namespace App\Controller;
 
 use App\Repository\ProductRepository;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ProductController extends AbstractController
 {
-    #[Route('/api/products', name: 'app_product', methods: ['GET'])]
-    #[IsGranted('ROLE_CUSTOMER', message: 'Vous n\'avez pas les droits')]
-    public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer, Request $request): JsonResponse
+    #[Route('/api/products', name: 'app_products', methods: ['GET'])]
+    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
+    public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer, Request $request, TagAwareCacheInterface $cache): JsonResponse
     {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
-        $productList = $productRepository->findAllWithPagination($page, $limit);
+
+        $idCache = "app_products" . $page . "-" . $limit;
+
+        $productList = $cache->get($idCache, function (ItemInterface $item) use ($productRepository, $page, $limit) {
+            echo ("pas en cache");
+            $item->tag("productCache");
+            return $productRepository->findAllWithPagination($page, $limit);
+        });
 
         $jsonProductlist = $serializer->serialize($productList, 'json');
         return new JsonResponse($jsonProductlist, Response::HTTP_OK, [], true);
     }
 
     #[Route('/api/products/{id}', name: 'detail_Product', methods: ['GET'])]
-    #[IsGranted('ROLE_CUSTOMER', message: 'Vous n\'avez pas les droits')]
+    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
     public function getDetailProduct(int $id, SerializerInterface $serializer, ProductRepository $productRepository): JsonResponse
     {
 

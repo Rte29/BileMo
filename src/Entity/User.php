@@ -16,22 +16,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getUsers", "getCustomers"])]
+    #[Groups(["getUsers"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(["getUsers", "getCustomers"])]
+    #[Groups(["getUsers"])]
     private ?string $email = null;
 
     #[ORM\Column]
-    #[Groups(["getUsers", "getCustomers"])]
+    #[Groups(["getUsers"])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Groups(["getUsers", "getCustomers"])]
+    #[Groups(["getUsers"])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
