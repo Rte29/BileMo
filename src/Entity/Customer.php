@@ -13,7 +13,7 @@ class Customer
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getUsers", "getCustomers"])]
+    #[Groups(["getCustomers"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'customers')]
