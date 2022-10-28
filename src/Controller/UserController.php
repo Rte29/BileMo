@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
-use Symfony\Component\Serializer\SerializerInterface;
+use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -28,8 +29,9 @@ class UserController extends AbstractController
         $jsonUserList = $cache->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $serializer) {
             echo ("pas en cache");
             $item->tag("userCache");
+            $context = SerializationContext::create()->setGroups(["getUsers"]);
             $userList = $userRepository->findAllWithPagination($page, $limit);
-            return $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
+            return $serializer->serialize($userList, 'json', $context);
         });
 
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
