@@ -55,8 +55,9 @@ class CustomerController extends AbstractController
 
     #[Route('/api/customers/{id}', name: 'delete_customer', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits pour supprimer un customer')]
-    public function deleteCustomer(Customer $customer, EntityManagerInterface $em): JsonResponse
+    public function deleteCustomer(Customer $customer, EntityManagerInterface $em, TagAwareCacheInterface $cachePool): JsonResponse
     {
+        $cachePool->invalidateTags(["customersCache"]);
         $em->remove($customer);
         $em->flush();
 
@@ -65,8 +66,9 @@ class CustomerController extends AbstractController
 
     #[Route('/api/customers', name: 'create_customers', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
-    public function createCustomers(SerializerInterface $serializer, Request $request, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, UserRepository $userRepository): JsonResponse
+    public function createCustomers(SerializerInterface $serializer, Request $request, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, UserRepository $userRepository, TagAwareCacheInterface $cachePool): JsonResponse
     {
+        $cachePool->invalidateTags(["customersCache"]);
         $customer = $serializer->deserialize($request->getContent(), Customer::class, 'json');
 
         $content = $request->toArray();
@@ -85,10 +87,11 @@ class CustomerController extends AbstractController
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, ["Location" => $location], true);
     }
 
-    #[Route('/api/customers/{id}', name: "updateCustomer", methods: ['PUT'])]
+    #[Route('/api/customers/{id}', name: "update_customer", methods: ['PUT'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
-    public function updateCustomer(Request $request, SerializerInterface $serializer, Customer $currentCustomer, EntityManagerInterface $em, UserRepository $userRepository): JsonResponse
+    public function updateCustomer(Request $request, SerializerInterface $serializer, Customer $currentCustomer, EntityManagerInterface $em, UserRepository $userRepository, TagAwareCacheInterface $cachePool): JsonResponse
     {
+        $cachePool->invalidateTags(["customersCache"]);
         $updatedCustomer = $serializer->deserialize(
             $request->getContent(),
             Customer::class,
