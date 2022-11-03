@@ -7,6 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CustomerRepository;
 use JMS\Serializer\Annotation\Groups;
 use Hateoas\Configuration\Annotation as Hateoas;
+use PhpParser\Node\Expr\Cast\String_;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @Hateoas\Relation(
@@ -36,6 +39,8 @@ use Hateoas\Configuration\Annotation as Hateoas;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getCustomers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))"),
  * )
+ * 
+ *  @UniqueEntity(fields="email", message="Cet email existe déjà.")
  *
  */
 
@@ -55,14 +60,18 @@ class Customer
 
     #[ORM\Column(length: 255)]
     #[Groups(["getUsers", "getCustomers"])]
+    #[Assert\NotBlank(message: "l'email doit être renseigné")]
+    #[Assert\Email(message: "l'entrée n'est pas de type email")]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(["getUsers", "getCustomers"])]
+    #[Assert\NotBlank(message: "le prénom doit être renseigné")]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(["getUsers", "getCustomers"])]
+    #[Assert\NotBlank(message: "le Nom doit être renseigné")]
     private ?string $lastName = null;
 
     public function getId(): ?int
