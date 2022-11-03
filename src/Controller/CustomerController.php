@@ -18,9 +18,39 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
+
 
 class CustomerController extends AbstractController
 {
+
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Retourne la liste des customers",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=Customer::class, groups={"getCustomers"}))
+     *     )
+     * )
+     *     
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="La page que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Le nombre d'éléments que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Tag(name="Customers")
+     */
     #[Route('/api/customers', name: 'app_customers', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function getAllCustomers(CustomerRepository $customerRepository, SerializerInterface $serializer, Request $request, TagAwareCacheInterface $cache): JsonResponse
@@ -42,6 +72,18 @@ class CustomerController extends AbstractController
         return new JsonResponse($jsonCustomerList, Response::HTTP_OK, [], true);
     }
 
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Retourne le détail d'un customer",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=Customer::class, groups={"getCustomers"}))
+     *     )
+     * )
+     * @OA\Tag(name="Customers")
+     */
+
     #[Route('/api/customers/{id}', name: 'detail_customer', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function getDetailCustomer(int $id, SerializerInterface $serializer, CustomerRepository $customerRepository): JsonResponse
@@ -56,6 +98,17 @@ class CustomerController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     }
 
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Supprime un customer",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=Customer::class, groups={"getCustomers"}))
+     *     )
+     * )
+     * @OA\Tag(name="Customers")
+     */
     #[Route('/api/customers/{id}', name: 'delete_customer', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits pour supprimer un customer')]
     public function deleteCustomer(Customer $customer, EntityManagerInterface $em, TagAwareCacheInterface $cachePool): JsonResponse
@@ -67,6 +120,17 @@ class CustomerController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Création d'un customer",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=Customer::class, groups={"getCustomers"}))
+     *     )
+     * )
+     * @OA\Tag(name="Customers")
+     */
     #[Route('/api/customers', name: 'create_customers', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function createCustomers(SerializerInterface $serializer, Request $request, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, UserRepository $userRepository, TagAwareCacheInterface $cachePool, ValidatorInterface $validator): JsonResponse
@@ -96,6 +160,17 @@ class CustomerController extends AbstractController
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, ["Location" => $location], true);
     }
 
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Mise à jour d'un customer",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=Customer::class, groups={"getCustomers"}))
+     *     )
+     * )
+     * @OA\Tag(name="Customers")
+     */
     #[Route('/api/customers/{id}', name: "update_customer", methods: ['PUT'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function updateCustomer(Request $request, SerializerInterface $serializer, Customer $currentCustomer, EntityManagerInterface $em, UserRepository $userRepository, TagAwareCacheInterface $cachePool, ValidatorInterface $validator): JsonResponse
@@ -121,6 +196,6 @@ class CustomerController extends AbstractController
 
         $cachePool->invalidateTags(["customersCache"]);
 
-        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+        return new JsonResponse($currentCustomer, JsonResponse::HTTP_OK);
     }
 }
