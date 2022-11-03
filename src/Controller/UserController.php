@@ -13,9 +13,37 @@ use JMS\Serializer\SerializerInterface;
 use JMS\Serializer\SerializationContext;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
 
 class UserController extends AbstractController
 {
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Retourne la liste des Users",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     *     
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="La page que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Le nombre d'éléments que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Tag(name="Users")
+     */
     #[Route('/api/users', name: 'app_users', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer, Request $request, TagAwareCacheInterface $cache): JsonResponse
@@ -37,6 +65,17 @@ class UserController extends AbstractController
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Retourne le détail d'un user",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     * @OA\Tag(name="Users")
+     */
     #[Route('/api/users/{id}', name: 'detail_User', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous n\'avez pas les droits')]
     public function getDetailUser(int $id, SerializerInterface $serializer, UserRepository $userRepository): JsonResponse

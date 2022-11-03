@@ -12,9 +12,37 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use JMS\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
 
 class ProductController extends AbstractController
 {
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Retourne la liste des produits",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
+     *     )
+     * )
+     *     
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="La page que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Le nombre d'éléments que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Tag(name="Products")
+     */
     #[Route('/api/products', name: 'app_products', methods: ['GET'])]
     #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
     public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer, Request $request, TagAwareCacheInterface $cache): JsonResponse
@@ -34,6 +62,17 @@ class ProductController extends AbstractController
         return new JsonResponse($jsonProductlist, Response::HTTP_OK, [], true);
     }
 
+    /**
+     * @OA\Response(
+     *      response= 200,
+     *      description="Retourne le détail d'un produits",
+     *      @OA\JsonContent(
+     *          type="array",
+     *          @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
+     *     )
+     * )
+     * @OA\Tag(name="Products")
+     */
     #[Route('/api/products/{id}', name: 'detail_Product', methods: ['GET'])]
     #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits')]
     public function getDetailProduct(int $id, SerializerInterface $serializer, ProductRepository $productRepository): JsonResponse
