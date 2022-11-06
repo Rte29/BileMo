@@ -40,8 +40,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  *      exclusion = @Hateoas\Exclusion(groups="getCustomers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))"),
  * )
  * 
- *  @UniqueEntity(fields="email", message="Cet email existe déjà.")
- *
+ *  
  */
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
