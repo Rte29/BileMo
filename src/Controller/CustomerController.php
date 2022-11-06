@@ -177,9 +177,15 @@ class CustomerController extends AbstractController
     {
         $newCustomer = $serializer->deserialize($request->getContent(), Customer::class, 'json');
 
-        $currentCustomer->setEmail($newCustomer->getEmail());
+        $errors = $validator->validate($newCustomer);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
+        //$currentCustomer->setEmail($newCustomer->getEmail());
         $currentCustomer->setFirstName($newCustomer->getFirstName());
         $currentCustomer->setLastName($newCustomer->getLastName());
+        $currentCustomer->setEmail($newCustomer->getEmail());
 
         $errors = $validator->validate($currentCustomer);
         if ($errors->count() < 0) {
@@ -196,6 +202,8 @@ class CustomerController extends AbstractController
 
         $cachePool->invalidateTags(["customersCache"]);
 
-        return new JsonResponse($currentCustomer, JsonResponse::HTTP_OK);
+        $context = SerializationContext::create()->setGroups(["getCustomers"]);
+        $jsonCustomer = $serializer->serialize($currentCustomer, 'json', $context);
+        return new JsonResponse($jsonCustomer, JsonResponse::HTTP_OK, [], true);
     }
 }
