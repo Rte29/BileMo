@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\CustomerRepository;
 use JMS\Serializer\SerializerInterface;
@@ -21,7 +22,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
-
+use Symfony\Component\VarDumper\VarDumper;
 
 class CustomerController extends AbstractController
 {
@@ -173,29 +174,22 @@ class CustomerController extends AbstractController
      */
     #[Route('/api/customers/{id}', name: "update_customer", methods: ['PUT'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits')]
-    public function updateCustomer(Request $request, SerializerInterface $serializer, Customer $currentCustomer, EntityManagerInterface $em, UserRepository $userRepository, TagAwareCacheInterface $cachePool, ValidatorInterface $validator): JsonResponse
+    public function updateCustomer(Int $id, Request $request, SerializerInterface $serializer, Customer $currentCustomer, EntityManagerInterface $em, UserRepository $userRepository, TagAwareCacheInterface $cachePool, ValidatorInterface $validator, CustomerRepository $customerRepository): JsonResponse
     {
         $newCustomer = $serializer->deserialize($request->getContent(), Customer::class, 'json');
 
-        $errors = $validator->validate($newCustomer);
-        if ($errors->count() > 0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
-        }
-
-        //$currentCustomer->setEmail($newCustomer->getEmail());
         $currentCustomer->setFirstName($newCustomer->getFirstName());
         $currentCustomer->setLastName($newCustomer->getLastName());
         $currentCustomer->setEmail($newCustomer->getEmail());
+        $currentCustomer->setRelation($newCustomer->getRelation());
+
+
 
         $errors = $validator->validate($currentCustomer);
         if ($errors->count() < 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
 
-        $content = $request->toArray();
-        $idUser = $content['idUser'] ?? -1;
-
-        $currentCustomer->setRelation($userRepository->find($idUser));
 
         $em->persist($currentCustomer);
         $em->flush();
