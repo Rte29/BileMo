@@ -2,8 +2,8 @@
 nelmio_api_doc:
     documentation:
         info:
-            title: Books
-            description: Une API pour vendre le top des telephones portables !
+            title: BileMo
+            description: Une API pour vendre le top des téléphones portables !
             version: 1.0.0
         paths:
             /api/login_check:
