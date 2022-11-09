@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\CustomerRepository;
 use JMS\Serializer\SerializerInterface;
@@ -21,7 +22,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
-
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\VarDumper\VarDumper;
 
 class CustomerController extends AbstractController
 {
@@ -177,23 +179,21 @@ class CustomerController extends AbstractController
     {
         $newCustomer = $serializer->deserialize($request->getContent(), Customer::class, 'json');
 
+
         $errors = $validator->validate($newCustomer);
+
         if ($errors->count() > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
 
-        //$currentCustomer->setEmail($newCustomer->getEmail());
         $currentCustomer->setFirstName($newCustomer->getFirstName());
         $currentCustomer->setLastName($newCustomer->getLastName());
         $currentCustomer->setEmail($newCustomer->getEmail());
 
-        $errors = $validator->validate($currentCustomer);
-        if ($errors->count() < 0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
-        }
 
         $content = $request->toArray();
-        $idUser = $content['idUser'] ?? -1;
+
+        $idUser = $content['relationId'] ?? -1;
 
         $currentCustomer->setRelation($userRepository->find($idUser));
 
